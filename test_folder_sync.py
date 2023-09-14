@@ -17,6 +17,16 @@ def sync_the_folders(source_folder, replica_folder, log_file, interval):
     try:
         if not os.path.exists(source_folder) or not os.path.exists(replica_folder):
             raise FileNotFoundError("Source or replica folder does not exist.")
+        
+        if log_file:
+            if not os.path.isdir(os.path.dirname(log_file)):
+                raise FileNotFoundError("Log file directory does not exist. Please provide a valid log file path")  
+                      
+            try:
+                with open(log_file, 'a') as log:
+                    print(f"log file is created")
+            except Exception as e:
+                raise Exception(f"Failed to create log file: {e}")
         print(f"Folders Synchronization Started with an interval of {interval} seconds")
         while True:
             # List all files and folders in the source and replica folders with their MD5 hashes            
@@ -74,7 +84,7 @@ def sync_the_folders(source_folder, replica_folder, log_file, interval):
                         with open(log_file, 'a') as log:
                             log.write(f"Deleted file: {item_path}\n")
             time.sleep(interval)
-
+    
     except FileNotFoundError as e:
          print(f"Error: {e}")
          with open(log_file, 'a') as log:
