@@ -6,6 +6,7 @@ import hashlib
 import sys
 
 def check_paths(source_folder, replica_folder, log_file):
+    '''Check existence of folders and  a valid log file'''
     if not os.path.exists(source_folder) or not os.path.exists(replica_folder):
         raise FileNotFoundError("Source or replica folder does not exist.")
     
@@ -20,14 +21,13 @@ def check_paths(source_folder, replica_folder, log_file):
             raise Exception(f"Failed to create log file: {e}")
 
 def check_permissions(source_folder, replica_folder):
-    # Check if the source directory has read permission
+    '''Check the permissions of source and target folders'''
     if not os.access(source_folder, os.R_OK):
         print(f"Source directory '{source_folder}' does not have read permission.")
         sys.exit(1)
 
     print(f"Source folder: '{source_folder}' has read permission.")
 
-    # Check if the target directory has write permission
     if not os.access(replica_folder, os.W_OK):
         print(f"Replica directory '{replica_folder}' does not have write permission.")
         sys.exit(1)
@@ -43,9 +43,11 @@ def get_md5(file_path):
     return md5.hexdigest()
 
 def get_timestamp():
+    '''get the time stamp'''
     return time.strftime("%Y-%m-%d %H:%M:%S", time.localtime())
 
 def get_source_data(source_folder):
+    '''fetch source folder data'''
     source_data_items = {}
     for root, dirs, files in os.walk(source_folder):
         relative_path = os.path.relpath(root, source_folder)
@@ -57,6 +59,7 @@ def get_source_data(source_folder):
     return source_data_items        
 
 def get_replica_data(replica_folder):
+    '''fetch replica folder data'''
     replica_items = {}
     for root, dirs, files in os.walk(replica_folder):
         relative_path = os.path.relpath(root, replica_folder)
@@ -68,6 +71,7 @@ def get_replica_data(replica_folder):
     return replica_items             
 
 def copy_update_data(source_folder, replica_folder, source_data_items, replica_items, log_file):
+    '''Copy or update the data in replica folder'''
     for item_path, md5_source in source_data_items.items():
         replica_path = os.path.join(replica_folder, item_path)
 
@@ -89,6 +93,7 @@ def copy_update_data(source_folder, replica_folder, source_data_items, replica_i
 
 
 def delete_data(source_folder, replica_folder, source_data_items, replica_items, log_file):
+    '''Delete the data in replica folder'''
     for item_path, md5_replica in replica_items.items():
         source_path = os.path.join(source_folder, item_path)
         if not os.path.exists(source_path) or md5_replica != source_data_items.get(item_path):
@@ -106,7 +111,7 @@ def delete_data(source_folder, replica_folder, source_data_items, replica_items,
 
 
 def sync_the_folders(source_folder, replica_folder, log_file, interval):
-    """Perform the folder synchronization"""
+    '''Perform the folder synchronization'''
     try:
         # Checking source, replica & log file paths
         check_paths(source_folder, replica_folder, log_file)
