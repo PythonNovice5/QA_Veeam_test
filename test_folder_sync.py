@@ -12,6 +12,9 @@ def get_md5(file_path):
             md5.update(chunk_data)
     return md5.hexdigest()
 
+def get_timestamp():
+    return time.strftime("%Y-%m-%d %H:%M:%S", time.localtime())
+
 def sync_the_folders(source_folder, replica_folder, log_file, interval):
     """Perform the folder synchronization"""
     try:
@@ -24,10 +27,10 @@ def sync_the_folders(source_folder, replica_folder, log_file, interval):
                       
             try:
                 with open(log_file, 'a') as log:
-                    print(f"log file is created")
+                    print(f"log file is created",flush=True)
             except Exception as e:
                 raise Exception(f"Failed to create log file: {e}")
-        print(f"Folders Synchronization Started with an interval of {interval} seconds")
+        print(f"Folders Synchronization Started with an interval of {interval} seconds",flush=True)
         while True:
             # List all files and folders in the source and replica folders with their MD5 hashes            
             source_data_items = {}
@@ -58,15 +61,15 @@ def sync_the_folders(source_folder, replica_folder, log_file, interval):
                 if md5_source is None:
                     # It's a directory, create it in the replica
                     os.makedirs(replica_path, exist_ok=True)
-                    print(f"Created directory: {item_path}")
+                    print(f"Created directory: {item_path}",flush=True)
                     with open(log_file, 'a') as log:
-                        log.write(f"Created directory: {item_path}\n")
+                        log.write(f"[{get_timestamp()}] Created directory: {item_path}\n")
                 else:
                     # It's a file, copy it to the replica
                     shutil.copy2(os.path.join(source_folder, item_path), replica_path)
-                    print(f"Copied/Updated: {item_path}")
+                    print(f"Copied/Updated: {item_path}",flush=True)
                     with open(log_file, 'a') as log:
-                        log.write(f"Copied/Updated: {item_path}\n")
+                        log.write(f"[{get_timestamp()}] Copied/Updated: {item_path}\n")
 
             # Delete items from replica that don't exist in source
             for item_path, md5_replica in replica_items.items():
@@ -75,26 +78,26 @@ def sync_the_folders(source_folder, replica_folder, log_file, interval):
                     item_path_full = os.path.join(replica_folder, item_path)
                     if os.path.isdir(item_path_full):
                         shutil.rmtree(item_path_full)
-                        print(f"Deleted directory: {item_path}")
+                        print(f"Deleted directory: {item_path}",flush=True)
                         with open(log_file, 'a') as log:
-                            log.write(f"Deleted directory: {item_path}\n")
+                            log.write(f"[{get_timestamp()}] Deleted directory: {item_path}\n")
                     else:
                         os.remove(item_path_full)
-                        print(f"Deleted file: {item_path}")
+                        print(f"Deleted file: {item_path}",flush=True)
                         with open(log_file, 'a') as log:
-                            log.write(f"Deleted file: {item_path}\n")
+                            log.write(f"[{get_timestamp()}] Deleted file: {item_path}\n")
             time.sleep(interval)
     
     except FileNotFoundError as e:
-         print(f"Error: {e}")
+         print(f"Error: {e}",flush=True)
          with open(log_file, 'a') as log:
-            log.write(f"Error: {e}\n")
-            log.write("Please make sure the source and replica folders exist.\n")
+            log.write(f"[{get_timestamp()}] Error: {e}\n")
+            log.write(f"[{get_timestamp()}] Please make sure the source and replica folders exist.\n")
 
     except Exception as e:
-        print(f"An unexpected error occurred: {e}")
+        print(f"An unexpected error occurred: {e}",flush=True)
         with open(log_file, 'a') as log:
-            log.write(f"An unexpected error occurred: {e}\n")
+            log.write(f"[{get_timestamp()}] An unexpected error occurred: {e}\n")
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Synchronize two folders using MD5 hashes.'")
